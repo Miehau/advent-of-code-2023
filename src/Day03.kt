@@ -101,10 +101,8 @@ fun main() {
                 val touchesAfter = touchesSpecialCharacterInlineAfter(splitInput, index, number)
                 val touchesBelow = touchesSpecialCharacterBelow(index, splitInput, number)
                 if (touchesAbove || touchesBefore || touchesAfter || touchesBelow) {
-//                    println("Passing ${number.first.toInt()}")
                     number.first.toInt()
                 } else {
-//                    println("Not passing ${number.first.toInt()}")
                     null
                 }
             }.sumOf { it }
