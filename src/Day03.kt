@@ -1,5 +1,18 @@
 val specialCharacter = "[!@#$%^&*+\\-/=]".toRegex()
 fun main() {
+    fun addInteractionToGear(
+        coordinates: Pair<Int, Int>,
+        number: Pair<String, IntRange>
+    ) {
+        if (gears.containsKey(coordinates)) {
+            gears[coordinates]!!.interact(number.first.toInt())
+        } else {
+            val gear = Gear(coordinates)
+            gear.interact(number.first.toInt())
+            gears[coordinates] = gear
+        }
+    }
+
     fun touchesSpecialCharacterAbove(
         index: Int,
         splitInput: List<List<String>>,
@@ -10,6 +23,12 @@ fun main() {
                 valueOrZero(number.second.first - 1),
                 valueOrLast(number.second.last + 2, splitInput[index])
             )
+                .onEachIndexed { offset, v ->
+                    if (v == "*") {
+                        val coordinates = Pair(valueOrZero(number.second.first - 1) + offset, index - 1)
+                        addInteractionToGear(coordinates, number)
+                    }
+                }
                 .any { specialCharacter.matches(it) }
         } else {
             false
@@ -21,12 +40,24 @@ fun main() {
         index: Int,
         number: Pair<String, IntRange>
     ) = specialCharacter.matches(splitInput[index][valueOrZero(number.second.first - 1)])
+        .also {
+            if ("*" == splitInput[index][valueOrZero(number.second.first - 1)]) {
+                val coordinates = Pair(valueOrZero(number.second.first - 1), index)
+                addInteractionToGear(coordinates, number)
+            }
+        }
 
     fun touchesSpecialCharacterInlineAfter(
         splitInput: List<List<String>>,
         index: Int,
         number: Pair<String, IntRange>
     ) = specialCharacter.matches(splitInput[index][valueOrLast(number.second.last + 1, splitInput[index])])
+        .also {
+            if ("*" == splitInput[index][valueOrLast(number.second.last + 1, splitInput[index])]) {
+                val coordinates = Pair(valueOrLast(number.second.last + 1, splitInput[index]), index)
+                addInteractionToGear(coordinates, number)
+            }
+        }
 
     fun touchesSpecialCharacterBelow(
         index: Int,
@@ -38,6 +69,12 @@ fun main() {
                 valueOrZero(number.second.first - 1),
                 valueOrLast(number.second.last + 2, splitInput[index])
             )
+                .onEachIndexed { offset, v ->
+                    if (v == "*") {
+                        val coordinates = Pair(valueOrZero(number.second.first - 1) + offset, index + 1)
+                        addInteractionToGear(coordinates, number)
+                    }
+                }
                 .any { specialCharacter.matches(it) }
         } else {
             false
@@ -45,6 +82,7 @@ fun main() {
     }
 
     fun part1(input: List<String>): Int {
+        gears.clear()
         val splitInput = input
             .map { line -> line.split("").drop(1).dropLast(1) }
             .toList()
@@ -62,11 +100,11 @@ fun main() {
                 val touchesBefore = touchesSpecialCharacterInlineBefore(splitInput, index, number)
                 val touchesAfter = touchesSpecialCharacterInlineAfter(splitInput, index, number)
                 val touchesBelow = touchesSpecialCharacterBelow(index, splitInput, number)
-                println(number.first)
-                println("$touchesAbove || $touchesBefore || $touchesAfter || $touchesBelow")
                 if (touchesAbove || touchesBefore || touchesAfter || touchesBelow) {
+//                    println("Passing ${number.first.toInt()}")
                     number.first.toInt()
                 } else {
+//                    println("Not passing ${number.first.toInt()}")
                     null
                 }
             }.sumOf { it }
@@ -74,17 +112,19 @@ fun main() {
         return sum
     }
 
-    fun part2(input: List<String>): Int {
-        return input.size
-    }
-
     // test if implementation meets criteria from the description, like:
     val testInput = readInput("day3_test")
     check(part1(testInput) == 4361)
 
     val input = readInput("day3")
-    part1(input).println()
-    part2(input).println()
+    check(part1(input) == 539713)
+    val gearRatios = gears
+        .filter { it.value.getInteractionCount() == 2 }
+        .map { it.value.getGearRatio() }
+        .sum()
+    val asd = gears.entries.sortedBy { it.key.second }
+        .map { Pair(it.key, it.value.interactions) }
+    println("gear ratios: $gearRatios")
 }
 
 fun valueOrZero(value: Int): Int {
@@ -100,5 +140,24 @@ fun valueOrLast(value: Int, collection: Collection<Any>): Int {
         collection.size - 1
     } else {
         value
+    }
+}
+
+val gears = mutableMapOf<Pair<Int, Int>, Gear>()
+
+data class Gear(val coordinates: Pair<Int, Int>) {
+    val interactions = mutableListOf<Int>()
+
+    fun interact(number: Int) {
+        this.interactions.add(number)
+    }
+
+    fun getInteractionCount(): Int {
+        return this.interactions.count()
+    }
+
+    fun getGearRatio(): Int {
+        return this.interactions
+            .fold(1) { acc, next -> acc * next }
     }
 }
