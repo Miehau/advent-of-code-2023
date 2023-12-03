@@ -36,10 +36,6 @@ fun extractNumber(line: String): String {
     return first.toStringOrEmpty() + last.toStringOrEmpty()
 }
 
-private fun Char?.toStringOrEmpty(): String {
-    return this?.toString() ?: ""
-}
-
 fun extractNumbersFrom(input: String): String {
     return input.mapIndexed() { index, char ->
         if (char.isDigit()) {
