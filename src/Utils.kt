@@ -24,3 +24,19 @@ fun Any?.println() = println(this)
 fun Char?.toStringOrEmpty(): String {
     return this?.toString() ?: ""
 }
+
+fun valueOrZero(value: Int): Int {
+    return if (value < 0) {
+        0
+    } else {
+        value
+    }
+}
+
+fun valueOrLast(value: Int, collection: Collection<Any>): Int {
+    return if (value >= collection.size) {
+        collection.size
+    } else {
+        value
+    }
+}

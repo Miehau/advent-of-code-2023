@@ -125,22 +125,6 @@ fun main() {
     println("gear ratios: $gearRatios")
 }
 
-fun valueOrZero(value: Int): Int {
-    return if (value < 0) {
-        0
-    } else {
-        value
-    }
-}
-
-fun valueOrLast(value: Int, collection: Collection<Any>): Int {
-    return if (value >= collection.size) {
-        collection.size - 1
-    } else {
-        value
-    }
-}
-
 val gears = mutableMapOf<Pair<Int, Int>, Gear>()
 
 data class Gear(val coordinates: Pair<Int, Int>) {
